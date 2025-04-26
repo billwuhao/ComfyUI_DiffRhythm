@@ -4,6 +4,7 @@ from einops import rearrange
 import sys
 import os
 import json
+from easydict import EasyDict
 from muq import MuQMuLan
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
@@ -130,35 +131,54 @@ class MultiLinePrompt:
     def promptgen(self, multi_line_prompt: str):
         return (multi_line_prompt.strip(),)
 
+import folder_paths
+models_dir = folder_paths.models_dir
+model_path = os.path.join(models_dir, "TTS")
+models = ["cfm_model.pt", "cfm_full_model.pt"]
+
+def set_all_seeds(seed):
+    # import random
+    # import numpy as np
+    # # 1. Python 内置随机模块
+    # random.seed(seed)
+    # # 2. NumPy 随机数生成器
+    # np.random.seed(seed)
+    # 3. PyTorch CPU 和 GPU 种子
+    torch.manual_seed(seed)
+    # 4. 如果使用 CUDA（GPU）
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)  # 多 GPU 情况
+        # torch.backends.cudnn.deterministic = True  # 确保卷积结果确定
+        # torch.backends.cudnn.benchmark = False     # 关闭优化（牺牲速度换取确定性）
+
 
 class DiffRhythmRun:
-    device = "cpu"
-    if torch.cuda.is_available():
-        device = "cuda"
-    elif torch.backends.mps.is_available():
-        device = "mps"
-    
-    node_dir = os.path.dirname(os.path.abspath(__file__))
-    comfy_path = os.path.dirname(os.path.dirname(node_dir))
-    model_path = os.path.join(comfy_path, "models", "TTS")
-    models = ["cfm_model.pt", "cfm_full_model.pt"]
-
-    model_cache = {"cfm": None, "muq": None, "vae": None}
+    def __init__(self):
+        device = "cpu"
+        if torch.cuda.is_available():
+            device = "cuda"
+        elif torch.backends.mps.is_available():
+            device = "mps"
+        self.device = device
+        self.cfm = None
+        self.vae = None
+        self.muq = None
     @classmethod
     def INPUT_TYPES(cls):
                
         return {
             "required": {
-                "model": (cls.models, {"default": "cfm_full_model.pt"}),
+                "model": (models, {"default": "cfm_full_model.pt"}),
                 "style_prompt": ("STRING", {
                     "multiline": True, 
                     "default": ""}),
                 },
             "optional": {
-                "lyrics_prompt": ("STRING",),
+                "lyrics_prompt": ("STRING", {"forceInput": True}),
                 "style_audio": ("AUDIO", ),
                 "chunked": ("BOOLEAN", {"default": False, "tooltip": "Whether to use chunked decoding."}),
-                "unload_model": ("BOOLEAN", {"default": False}),
+                "unload_model": ("BOOLEAN", {"default": True}),
                 "odeint_method": (["euler", "midpoint", "rk4","implicit_adams"], {"default": "euler"}),
                 "steps": ("INT", {"default": 30, "min": 1, "max": 100, "step": 1}),
                 "cfg": ("INT", {"default": 4, "min": 1, "max": 10, "step": 1}),
@@ -185,23 +205,23 @@ class DiffRhythmRun:
             seed: int = 0):
 
         if seed != 0:
-            torch.manual_seed(seed)
-            torch.cuda.manual_seed(seed) 
+            set_all_seeds(seed)
 
         if model == "cfm_model.pt":
             max_frames = 2048
         elif model == "cfm_full_model.pt": 
             max_frames = 6144
 
-        cfm, tokenizer, muq, vae = self.prepare_model(model, self.device, use_cache = True)
+        if self.cfm is None:
+            self.cfm, tokenizer, self.muq, self.vae = self.prepare_model(model, self.device)
 
         lrc_prompt, start_time = get_lrc_token(max_frames, lyrics_prompt, tokenizer, self.device)
 
         vocal_flag = False
         if style_audio:
-            prompt, vocal_flag = self.get_audio_style_prompt(muq, style_audio)
+            prompt, vocal_flag = self.get_audio_style_prompt(self.muq, style_audio)
         elif style_prompt:
-            prompt = self.get_text_style_prompt(muq, style_prompt)
+            prompt = self.get_text_style_prompt(self.muq, style_prompt)
         else:
             raise ValueError("Style prompt or style audio must be provided")
 
@@ -211,8 +231,8 @@ class DiffRhythmRun:
         sway_sampling_coef = -1 if steps < 32 else None
         try:
             generated_song = inference(
-                cfm_model=cfm,
-                vae_model=vae,
+                cfm_model=self.cfm,
+                vae_model=self.vae,
                 cond=latent_prompt,
                 text=lrc_prompt,
                 duration=max_frames,
@@ -233,11 +253,9 @@ class DiffRhythmRun:
 
         if unload_model:
             import gc
-            del cfm
-            del tokenizer
-            del vae
-            del muq
-            DiffRhythmRun.model_cache = {"cfm": None, "muq": None, "vae": None}
+            self.cfm = None
+            self.muq = None
+            self.vae = None
             gc.collect()
             torch.cuda.empty_cache()
 
@@ -296,96 +314,97 @@ class DiffRhythmRun:
 
         return text_emb
 
-        
-    def prepare_model(self, model, device, use_cache=False):
+    def prepare_model(self, model, device):
         # prepare tokenizer
         try:
             tokenizer = CNENTokenizer()
         except Exception as e:
             raise
 
-        if use_cache and all(self.model_cache.values()):
-            return (self.model_cache["cfm"],
-                    tokenizer, 
-                    self.model_cache["muq"], 
-                    self.model_cache["vae"])
-        else:
-            from huggingface_hub import snapshot_download
-            # prepare cfm model
-            if model == "cfm_full_model.pt":
-                dit_ckpt_path = f"{self.model_path}/DiffRhythm/cfm_full_model.pt"
-                dit_config_path = f"{self.model_path}/DiffRhythm/config.json"
-                if not os.path.exists(dit_ckpt_path):
-                    snapshot_download(repo_id="ASLP-lab/DiffRhythm-full",
-                                        local_dir=f"{self.model_path}/DiffRhythm")
-                
-            elif model == "cfm_model.pt":
-                dit_ckpt_path = f"{self.model_path}/DiffRhythm/cfm_model.pt"
-                dit_config_path = f"{self.node_dir}/config/diffrhythm-1b.json"
-                if not os.path.exists(dit_ckpt_path):
-                    snapshot_download(repo_id="ASLP-lab/DiffRhythm-base",
-                                        local_dir=f"{self.model_path}/DiffRhythm")
-
-            vae_ckpt_path = f"{self.model_path}/DiffRhythm/vae_model.pt"
-
-            if not os.path.exists(vae_ckpt_path):
-                snapshot_download(repo_id="ASLP-lab/DiffRhythm-vae",
-                                    local_dir=f"{self.model_path}/DiffRhythm", 
-                                    ignore_patterns=["*safetensors"])
-                
-            try:
-                with open(dit_config_path, "r", encoding="utf-8") as f:
-                    model_config = json.load(f)
-            except Exception as e:
-                raise
+        from huggingface_hub import snapshot_download
+        # prepare cfm model
+        if model == "cfm_full_model.pt":
+            dit_ckpt_path = f"{model_path}/DiffRhythm/cfm_full_model.pt"
+            dit_config_path = f"{model_path}/DiffRhythm/config.json"
+            if not os.path.exists(dit_ckpt_path):
+                snapshot_download(repo_id="ASLP-lab/DiffRhythm-full",
+                                    local_dir=f"{model_path}/DiffRhythm")
             
-            dit_model_cls = DiT
-            if model == "cfm_model.pt":
-                cfm = CFM(
-                    transformer=dit_model_cls(**model_config["model"], use_style_prompt=True, max_pos=2048),
-                    num_channels=model_config["model"]["mel_dim"],
+        elif model == "cfm_model.pt":
+            dit_ckpt_path = f"{model_path}/DiffRhythm/cfm_model.pt"
+            dit_config_path = f"{model_path}/DiffRhythm/config.json"
+            if not os.path.exists(dit_ckpt_path):
+                snapshot_download(repo_id="ASLP-lab/DiffRhythm-base",
+                                    local_dir=f"{model_path}/DiffRhythm")
+
+        vae_ckpt_path = f"{model_path}/DiffRhythm/vae_model.pt"
+
+        if not os.path.exists(vae_ckpt_path):
+            snapshot_download(repo_id="ASLP-lab/DiffRhythm-vae",
+                                local_dir=f"{model_path}/DiffRhythm", 
+                                ignore_patterns=["*safetensors"])
+            
+        try:
+            with open(dit_config_path, "r", encoding="utf-8") as f:
+                model_config = json.load(f)
+        except Exception as e:
+            raise
+        
+        dit_model_cls = DiT
+        if model == "cfm_model.pt":
+            cfm = CFM(
+                transformer=dit_model_cls(**model_config["model"], use_style_prompt=True, max_pos=2048),
+                num_channels=model_config["model"]["mel_dim"],
+            )
+        elif model == "cfm_full_model.pt":
+            cfm = CFM(
+                    transformer=dit_model_cls(**model_config["model"], use_style_prompt=True, max_pos=6144),
+                    num_channels=model_config["model"]['mel_dim'],
+                    use_style_prompt=True
                 )
-            elif model == "cfm_full_model.pt":
-                cfm = CFM(
-                        transformer=dit_model_cls(**model_config["model"], use_style_prompt=True, max_pos=6144),
-                        num_channels=model_config["model"]['mel_dim'],
-                        use_style_prompt=True
-                    )
-            cfm = cfm.to(device)
+        cfm = cfm.to(device)
+
+        try:
+            cfm = load_checkpoint(cfm, dit_ckpt_path, device=device, use_ema=False)
+        except Exception as e:
+            raise
+
+        # prepare muq model
+        try:
+            main_model_dir = f"{model_path}/DiffRhythm/MuQ-MuLan-large"
+            local_audio_model_dir = f"{model_path}/DiffRhythm/MuQ-large-msd-iter"
+            local_text_model_dir = f"{model_path}/DiffRhythm/xlm-roberta-base"
+
+            config_path = f"{main_model_dir}/config.json"
+            with open(config_path, 'r') as f:
+                config_dict = json.load(f)
+
+            config_dict['audio_model']['name'] = local_audio_model_dir
+            config_dict['text_model']['name'] = local_text_model_dir
+            config_obj = EasyDict(config_dict) 
+
+            muq = MuQMuLan(config=config_obj, hf_hub_cache_dir=None)
+            weights_path = f"{main_model_dir}/pytorch_model.bin"
 
             try:
-                cfm = load_checkpoint(cfm, dit_ckpt_path, device=device, use_ema=False)
-            except Exception as e:
-                raise
+                state_dict = torch.load(weights_path, map_location='cpu')
+                # Adjust loading based on how weights are saved (e.g., remove prefixes if needed)
+                muq.load_state_dict(state_dict, strict=False) # Use strict=False initially
+            except FileNotFoundError:
+                raise FileNotFoundError(f"Weights file not found at {weights_path}")
 
-            # prepare muq model
-            try:
-                muq = MuQMuLan.from_pretrained("OpenMuQ/MuQ-MuLan-large", cache_dir=f"{self.model_path}/DiffRhythm")
-            except Exception as e:
-                raise
-            
-            muq = muq.to(device).eval()
+        except Exception as e:
+            raise
+        
+        muq = muq.to(device).eval()
 
-            # prepare vae
-            try:
-                vae = torch.jit.load(vae_ckpt_path, map_location="cpu").to(device)
-            except Exception as e:
-                raise
+        # prepare vae
+        try:
+            vae = torch.jit.load(vae_ckpt_path, map_location="cpu").to(device)
+        except Exception as e:
+            raise
 
-            DiffRhythmRun.model_cache["cfm"] = cfm
-            DiffRhythmRun.model_cache["muq"] = muq
-            DiffRhythmRun.model_cache["vae"] = vae
-            del muq
-            del vae
-            del cfm
-            import gc
-            gc.collect()
-            torch.cuda.empty_cache()
-
-        return (self.model_cache["cfm"],
-                tokenizer, 
-                self.model_cache["muq"], 
-                self.model_cache["vae"])
+        return (cfm, tokenizer, muq, vae)
 
 
 from MWAudioRecorderDR import AudioRecorderDR

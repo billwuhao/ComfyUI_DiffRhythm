@@ -1,7 +1,7 @@
 [project]
 name = "diffrhythm_mw"
 description = "Blazingly Fast and Embarrassingly Simple End-to-End Full-Length Song Generation. A node for ComfyUI."
-version = "2.1.2"
+version = "2.1.4"
 license = {file = "LICENSE"}
 dependencies = ["# accelerate==1.4.0", "# torchdiffeq==0.2.5", "# torchaudio==2.6.0", "# transformers==4.49.0", "# librosa==0.10.2.post1", "# pyarrow==19.0.1", "# pandas==2.2.3", "# bitsandbytes", "# jieba==0.42.1", "# cn2an==0.5.23", "# pypinyin==0.53.0", "# onnxruntime", "LangSegment", "x-transformers", "pylance", "ema-pytorch", "prefigure", "muq", "mutagen", "pyopenjtalk", "pykakasi", "Unidecode", "phonemizer"]
 
@@ -12,4 +12,4 @@ Repository = "https://github.com/billwuhao/ComfyUI_DiffRhythm"
 [tool.comfy]
 PublisherId = "mw"
 DisplayName = "ComfyUI_DiffRhythm_MW"
-Icon = "https://github.com/billwuhao/aiart.website/blob/master/hb.png"
+Icon = ""

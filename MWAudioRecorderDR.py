@@ -11,8 +11,6 @@ class AudioRecorderDR:
     def INPUT_TYPES(cls):
         return {
             "required": {
-                # Trigger control
-                "trigger": ("BOOLEAN", {"default": False}),
                 # Recording duration
                 "record_sec": ("INT", {
                     "default": 5,
@@ -45,7 +43,10 @@ class AudioRecorderDR:
                     "min": 0,
                     "max": 0xFFFFFFFFFFFFFFFF
                 }),
-            }
+            },
+            "optional": {  # 可选参数
+                "enable": ("BOOLEAN", {"default": True}),
+            },
         }
 
     RETURN_TYPES = ("AUDIO",)

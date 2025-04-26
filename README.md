@@ -8,6 +8,8 @@ Blazingly Fast and Embarrassingly Simple End-to-End Full-Length Song Generation.
 
 ## 📣 update
 
+[2025-04-26]⚒️: Change to manually selecting to download the `muq` model.
+
 [2025-03-21] ⚒️: Code refactored, ultra-fast generation speed. 4 minutes 45 seconds of music generated in less than 20 seconds, 1 minute 35 seconds of music generated in less than 7 seconds. Added more tunable parameters for more creative freedom. Optional model unloading.
 
 [2025-03-16]⚒️: Released version v2.0.0. Supports full-length music generation, 4 minutes only takes 62 seconds.
@@ -36,14 +38,36 @@ pip install -r requirements.txt
 
 ## Model Download
 
-Models will be automatically downloaded to the `ComfyUI\models\TTS\DiffRhythm` folder.
+The model needs to be manually downloaded to the `ComfyUI\models\TTS\DiffRhythm` folder.
 
 The structure is as follows:
 
 ![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-03-13_00-08-51.png)
 
-Manual Download Addresses:
+```
+.
+│  cfm_full_model.pt
+│  cfm_model.pt
+│  config.json
+│  vae_model.pt
+│
+├─MuQ-large-msd-iter
+│      config.json
+│      model.safetensors
+│
+├─MuQ-MuLan-large
+│      config.json
+│      pytorch_model.bin
+│
+└─xlm-roberta-base
+        config.json
+        model.safetensors
+        sentencepiece.bpe.model
+        tokenizer.json
+        tokenizer_config.json
+```
 
+https://huggingface.co/ASLP-lab/DiffRhythm-full/tree/main  → `cfm_full_model.pt` and `config.json`
 https://huggingface.co/ASLP-lab/DiffRhythm-base/blob/main/cfm_model.pt  
 https://huggingface.co/ASLP-lab/DiffRhythm-vae/blob/main/vae_model.pt  
 https://huggingface.co/OpenMuQ/MuQ-MuLan-large/tree/main  

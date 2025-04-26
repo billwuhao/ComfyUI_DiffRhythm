@@ -9,6 +9,8 @@
 
 ## 📣 更新
 
+[2025-04-26]⚒️: 改为手动选择下载 muq 模型.
+
 [2025-03-21]⚒️: 代码重构, 超快生成速度, 4分45秒音乐, 20秒不到生成, 1分35秒音乐, 7秒不到生成. 增加更多可调参数, 畅玩更自由. 可选是否卸载模型.
 
 [2025-03-16]⚒️: 发布版本 v2.0.0. 支持全长音乐生成, 4 分钟仅需 62 秒.
@@ -37,14 +39,37 @@ pip install -r requirements.txt
 
 ## 模型下载
 
-模型会自动下载到 `ComfyUI\models\TTS\DiffRhythm` 文件夹下.
+模型需手动下载到 `ComfyUI\models\TTS\DiffRhythm` 文件夹下.
 
 结构如下:
 
 ![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-03-13_00-08-51.png)
 
-手动下载地址:
+```
+.
+│  cfm_full_model.pt
+│  cfm_model.pt
+│  config.json
+│  vae_model.pt
+│
+├─MuQ-large-msd-iter
+│      config.json
+│      model.safetensors
+│
+├─MuQ-MuLan-large
+│      config.json
+│      pytorch_model.bin
+│
+└─xlm-roberta-base
+        config.json
+        model.safetensors
+        sentencepiece.bpe.model
+        tokenizer.json
+        tokenizer_config.json
+```
 
+手动下载地址:
+https://huggingface.co/ASLP-lab/DiffRhythm-full/tree/main
 https://huggingface.co/ASLP-lab/DiffRhythm-base/blob/main/cfm_model.pt  
 https://huggingface.co/ASLP-lab/DiffRhythm-vae/blob/main/vae_model.pt  
 https://huggingface.co/OpenMuQ/MuQ-MuLan-large/tree/main  
@@ -63,7 +88,7 @@ Linux 系统下, 需要安装 `espeak-ng` 软件包. 执行如下命令安装:
 
 `apt-get -qq -y install espeak-ng`
 
-应该支持 Mac, 但尚未测试.
+支持 Mac, 但尚未测试.
 
 享受音乐吧🎶
 
