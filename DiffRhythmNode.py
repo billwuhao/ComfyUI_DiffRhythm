@@ -164,6 +164,7 @@ class DiffRhythmRun:
         self.cfm = None
         self.vae = None
         self.muq = None
+        self.tokenizer = None
     @classmethod
     def INPUT_TYPES(cls):
                
@@ -213,9 +214,9 @@ class DiffRhythmRun:
             max_frames = 6144
 
         if self.cfm is None:
-            self.cfm, tokenizer, self.muq, self.vae = self.prepare_model(model, self.device)
+            self.cfm, self.tokenizer, self.muq, self.vae = self.prepare_model(model, self.device)
 
-        lrc_prompt, start_time = get_lrc_token(max_frames, lyrics_prompt, tokenizer, self.device)
+        lrc_prompt, start_time = get_lrc_token(max_frames, lyrics_prompt, self.tokenizer, self.device)
 
         vocal_flag = False
         if style_audio:
@@ -256,6 +257,7 @@ class DiffRhythmRun:
             self.cfm = None
             self.muq = None
             self.vae = None
+            self.tokenizer = None
             gc.collect()
             torch.cuda.empty_cache()
 
