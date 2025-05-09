@@ -71,7 +71,7 @@ https://huggingface.co/ASLP-lab/DiffRhythm-full/tree/main  → `cfm_full_model.p
 https://huggingface.co/ASLP-lab/DiffRhythm-base/blob/main/cfm_model.pt  
 https://huggingface.co/ASLP-lab/DiffRhythm-vae/blob/main/vae_model.pt  
 https://huggingface.co/OpenMuQ/MuQ-MuLan-large/tree/main  
-https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/tree/main  
+https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/tree/main → `.safetensors`: (https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/blob/refs%2Fpr%2F1/model.safetensors)  
 https://huggingface.co/FacebookAI/xlm-roberta-base/tree/main
 
 ## Environment Configuration
