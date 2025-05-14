@@ -28,6 +28,8 @@
 
 ![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-14_16-33-54.png)
 
+https://github.com/user-attachments/assets/26b5c66d-6ce5-4bf9-9294-4658176b2a66
+
 ## 安装
 
 ```
