@@ -9,7 +9,6 @@ jieba
 cn2an
 pypinyin
 onnxruntime
-LangSegment
 x-transformers
 pylance
 ema-pytorch
@@ -20,3 +19,8 @@ pyopenjtalk
 pykakasi
 Unidecode
 phonemizer
+inflect
+py3langid
+easydict
+hydra
+omegaconf
