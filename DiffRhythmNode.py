@@ -288,7 +288,7 @@ class DiffRhythmRun:
         e_t = time.time() - s_t
         print(f"inference cost {e_t:.2f} seconds")
 
-        audio_tensor = generated_songs[0].unsqueeze(0).unsqueeze(0)
+        audio_tensor = generated_songs.unsqueeze(0)
 
         if unload_model:
             import gc
