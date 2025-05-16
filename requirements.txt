@@ -22,5 +22,5 @@ phonemizer
 inflect
 py3langid
 easydict
-hydra
+hydra-core
 omegaconf
