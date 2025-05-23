@@ -154,6 +154,13 @@ class MultiLineLyricsDR:
         return (lyrics.strip(),)
 
 
+CFM = None
+VAE = None
+MUQ = None
+TOKENIZER = None
+EVAL_MODEL = None
+EVAL_MUQ = None
+
 class DiffRhythmRun:
     def __init__(self):
         device = "cpu"
@@ -162,13 +169,6 @@ class DiffRhythmRun:
         elif torch.backends.mps.is_available():
             device = "mps"
         self.device = device
-
-        self.cfm = None
-        self.vae = None
-        self.muq = None
-        self.tokenizer = None
-        self.eval_model = None
-        self.eval_muq = None
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -222,9 +222,10 @@ class DiffRhythmRun:
             max_frames = 2048
         else:
             max_frames = 6144
-
-        if self.cfm is None:
-            self.cfm, self.tokenizer, self.muq, self.vae, self.eval_model, self.eval_muq = prepare_model(max_frames, self.device, model)
+            
+        global CFM, TOKENIZER, MUQ, VAE, EVAL_MODEL, EVAL_MUQ
+        if CFM is None:
+            CFM, TOKENIZER, MUQ, VAE, EVAL_MODEL, EVAL_MUQ = prepare_model(max_frames, self.device, model)
 
         batch_infer_num = 1 if quality_or_speed == "speed" else 5
 
@@ -235,17 +236,17 @@ class DiffRhythmRun:
                                                   style_audio_or_edit_song["waveform"].squeeze(0), 
                                                   style_audio_or_edit_song["sample_rate"], 
                                                   filename_prefix="style_audio_")
-            prompt, vocal_flag = get_audio_style_prompt(self.muq, style_audio_path)
+            prompt, vocal_flag = get_audio_style_prompt(MUQ, style_audio_path)
             print("Provided style_audio, style_prompt will be ineffective")
         else:
             assert style_prompt.strip(), "One of style_audio and style_prompt must be provided"
-            prompt = get_text_style_prompt(self.muq, style_prompt)
+            prompt = get_text_style_prompt(MUQ, style_prompt)
 
         edit_song_path = None
         if edit:
             if style_audio_or_edit_song is not None:
                 edit_song_path = style_audio_path
-                prompt, vocal_flag = get_audio_style_prompt(self.muq, edit_song_path)
+                prompt, vocal_flag = get_audio_style_prompt(MUQ, edit_song_path)
             assert edit_song_path and lyrics and edit_segments.strip(), "edit song, edit lyrics, edit segments must be provided"
 
             edit_segments = "["+edit_segments+"]"
@@ -253,7 +254,7 @@ class DiffRhythmRun:
         else:
             edit_segments = None
 
-        lrc_prompt, start_time = get_lrc_token(max_frames, lyrics.strip(), self.tokenizer, self.device)
+        lrc_prompt, start_time = get_lrc_token(max_frames, lyrics.strip(), TOKENIZER, self.device)
 
         negative_style_prompt = get_negative_style_prompt(self.device)
         latent_prompt, pred_frames = get_reference_latent(self.device, 
@@ -261,15 +262,15 @@ class DiffRhythmRun:
                                                           edit, 
                                                           pred_segments=edit_segments, 
                                                           ref_song=edit_song_path, 
-                                                          vae_model=self.vae)
+                                                          vae_model=VAE)
         sway_sampling_coef = -1 if steps < 32 else None
 
         s_t = time.time()
         generated_songs = inference(
-            cfm_model=self.cfm,
-            vae_model=self.vae,
-            eval_model=self.eval_model,
-            eval_muq=self.eval_muq,
+            cfm_model=CFM,
+            vae_model=VAE,
+            eval_model=EVAL_MODEL,
+            eval_muq=EVAL_MUQ,
             odeint_method=odeint_method,
             vocal_flag=vocal_flag,
             sway_sampling_coef=sway_sampling_coef,
@@ -292,12 +293,12 @@ class DiffRhythmRun:
 
         if unload_model:
             import gc
-            self.cfm = None
-            self.muq = None
-            self.vae = None
-            self.tokenizer = None
-            self.eval_model = None
-            self.eval_muq = None
+            CFM = None
+            MUQ = None
+            VAE = None
+            TOKENIZER = None
+            EVAL_MODEL = None
+            EVAL_MUQ = None
             gc.collect()
             torch.cuda.empty_cache()
 
