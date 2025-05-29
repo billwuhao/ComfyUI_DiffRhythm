@@ -4,15 +4,11 @@
 
 快速而简单的端到端全长歌曲生成.
 
-![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-13_01-51-00.png)
-
 ## 📣 更新
 
 [2025-05-13]⚒️: 支持 DiffRhythm v1.2 版本, 质量更好, 可编辑歌词. 目前发布 95 秒长度歌曲模型, 全长歌曲发布将即时更新. **注意**: 版本代码更新, 之前的模型生成质量可能会受到影响. 如果尝试之前的版本, 请退回到 v2.2.0 之前版本.
 
 [2025-04-26]⚒️: 改为手动选择下载 muq 模型.
-
-[2025-03-21]⚒️: 代码重构, 超快生成速度, 4分45秒音乐, 20秒不到生成, 1分35秒音乐, 7秒不到生成. 增加更多可调参数, 畅玩更自由. 可选是否卸载模型.
 
 [2025-03-16]⚒️: 发布版本 v2.0.0. 支持全长音乐生成, 4 分钟仅需 62 秒.
 
@@ -24,8 +20,16 @@
 
 ## 使用
 
-- 自动生成歌曲, 自动添加双语歌词字幕:
+- 文本生成音乐:
+![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-13_01-51-00.png)
 
+- 参考音频生成音乐:
+![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-29_13-44-25.png)
+
+- 编辑音乐:
+![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-29_13-46-34.png)
+
+- 自动生成歌曲, 自动添加歌词字幕:
 ![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-14_16-33-54.png)
 
 https://github.com/user-attachments/assets/26b5c66d-6ce5-4bf9-9294-4658176b2a66
@@ -79,14 +83,14 @@ pip install -r requirements.txt
 ```
 
 手动下载地址:
-https://huggingface.co/ASLP-lab/DiffRhythm-1_2/blob/main/cfm_model.pt  重命名: `cfm_model_v1_2.pt`
-https://huggingface.co/spaces/ASLP-lab/DiffRhythm/tree/main/pretrained
-https://huggingface.co/ASLP-lab/DiffRhythm-full/tree/main
-https://huggingface.co/ASLP-lab/DiffRhythm-base/blob/main/cfm_model.pt  
-https://huggingface.co/ASLP-lab/DiffRhythm-vae/blob/main/vae_model.pt  
-https://huggingface.co/OpenMuQ/MuQ-MuLan-large/tree/main  
-https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/tree/main 要下载 `.safetensors` 格式: (https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/blob/refs%2Fpr%2F1/model.safetensors) 
-https://huggingface.co/FacebookAI/xlm-roberta-base/tree/main
+- https://huggingface.co/ASLP-lab/DiffRhythm-1_2/blob/main/cfm_model.pt  重命名: `cfm_model_v1_2.pt`
+- https://huggingface.co/spaces/ASLP-lab/DiffRhythm/tree/main/pretrained
+- https://huggingface.co/ASLP-lab/DiffRhythm-full/tree/main
+- https://huggingface.co/ASLP-lab/DiffRhythm-base/blob/main/cfm_model.pt  
+- https://huggingface.co/ASLP-lab/DiffRhythm-vae/blob/main/vae_model.pt  
+- https://huggingface.co/OpenMuQ/MuQ-MuLan-large/tree/main  
+- https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/tree/main 要下载 `.safetensors` 格式: (https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/blob/refs%2Fpr%2F1/model.safetensors) 
+- https://huggingface.co/FacebookAI/xlm-roberta-base/tree/main
 
 ## 环境配置
 

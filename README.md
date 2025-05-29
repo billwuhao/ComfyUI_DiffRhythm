@@ -4,15 +4,11 @@
 
 Fast and easy end-to-end full-length song generation.
 
-![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-13_01-51-00.png)
-
 ## 📣 Updates
 
 [2025-05-13]⚒️: Supports DiffRhythm v1.2, better quality, editable lyrics. Currently released a 95-second song model, full-length song release will be updated promptly. **Note**: The version code has been updated, and the generation quality of previous models may be affected. If you want to try the previous version, please revert to the version before v2.2.0.
 
 [2025-04-26]⚒️: Changed to manually download the muq model.
-
-[2025-03-21]⚒️: Code refactoring, super fast generation speed, 4 minutes 45 seconds of music generated in less than 20 seconds, 1 minute 35 seconds of music generated in less than 7 seconds. Added more adjustable parameters for more freedom. Option to uninstall the model.
 
 [2025-03-16]⚒️: Released version v2.0.0. Supports full-length music generation, 4 minutes only takes 62 seconds.
 
@@ -24,8 +20,16 @@ Download the model and place it in the `ComfyUI\models\TTS\DiffRhythm` folder:
 
 ## Usage
 
-- Automatically generate song and add bilingual lyrics subtitles:
+- Text generated music:
+![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-13_01-51-00.png)
 
+- Generate music based on reference audio:
+![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-29_13-44-25.png)
+
+- Edit music:
+![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-29_13-46-34.png)
+
+- Automatically generate song and add bilingual lyrics subtitles:
 ![](https://github.com/billwuhao/ComfyUI_DiffRhythm/blob/master/images/2025-05-14_16-33-54.png)
 
 https://github.com/user-attachments/assets/26b5c66d-6ce5-4bf9-9294-4658176b2a66
@@ -79,14 +83,14 @@ The structure is as follows:
 ```
 
 Manual download links:
-https://huggingface.co/ASLP-lab/DiffRhythm-1_2/blob/main/cfm_model.pt  → `cfm_model_v1_2.pt`
-https://huggingface.co/spaces/ASLP-lab/DiffRhythm/tree/main/pretrained
-https://huggingface.co/ASLP-lab/DiffRhythm-full/tree/main
-https://huggingface.co/ASLP-lab/DiffRhythm-base/blob/main/cfm_model.pt  
-https://huggingface.co/ASLP-lab/DiffRhythm-vae/blob/main/vae_model.pt  
-https://huggingface.co/OpenMuQ/MuQ-MuLan-large/tree/main  
-https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/tree/main → `.safetensors`: (https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/blob/refs%2Fpr%2F1/model.safetensors)
-https://huggingface.co/FacebookAI/xlm-roberta-base/tree/main
+- https://huggingface.co/ASLP-lab/DiffRhythm-1_2/blob/main/cfm_model.pt  → `cfm_model_v1_2.pt`
+- https://huggingface.co/spaces/ASLP-lab/DiffRhythm/tree/main/pretrained
+- https://huggingface.co/ASLP-lab/DiffRhythm-full/tree/main
+- https://huggingface.co/ASLP-lab/DiffRhythm-base/blob/main/cfm_model.pt  
+- https://huggingface.co/ASLP-lab/DiffRhythm-vae/blob/main/vae_model.pt  
+- https://huggingface.co/OpenMuQ/MuQ-MuLan-large/tree/main  
+- https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/tree/main → `.safetensors`: (https://huggingface.co/OpenMuQ/MuQ-large-msd-iter/blob/refs%2Fpr%2F1/model.safetensors)
+- https://huggingface.co/FacebookAI/xlm-roberta-base/tree/main
 
 
 ## Environment Configuration
