@@ -169,6 +169,7 @@ class DiffRhythmRun:
         elif torch.backends.mps.is_available():
             device = "mps"
         self.device = device
+        self.model_name = None
 
     @classmethod
     def INPUT_TYPES(cls):
@@ -224,7 +225,8 @@ class DiffRhythmRun:
             max_frames = 6144
             
         global CFM, TOKENIZER, MUQ, VAE, EVAL_MODEL, EVAL_MUQ
-        if CFM is None:
+        if CFM is None or self.model_name != model:
+            self.model_name = model
             CFM, TOKENIZER, MUQ, VAE, EVAL_MODEL, EVAL_MUQ = prepare_model(max_frames, self.device, model)
 
         batch_infer_num = 1 if quality_or_speed == "speed" else 5
